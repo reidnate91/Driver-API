@@ -1,7 +1,17 @@
 'use strict';
 
 const Hapi = require('hapi');
-const Joi = require('joi')
+const Joi = require('joi');
+const monk = require('monk');
+const db = monk("mongodb://newuser:hello123@clusterproject-shard-00-00-e2ua7.mongodb.net:27017,clusterproject-shard-00-01-e2ua7.mongodb.net:27017,clusterproject-shard-00-02-e2ua7.mongodb.net:27017/wr-hauling?ssl=true&replicaSet=ClusterProject-shard-0&authSource=admin&retryWrites=true")
+// require('dotenv').config();
+
+// const db = require('db')
+// db.connect({
+//  url: process.env.MANGO_URL
+// })
+const drivers=  db.get("drivers")
+
 
 const init = async () => {
 
@@ -20,10 +30,12 @@ const init = async () => {
     server.route({
         method: 'POST',
         path: '/signup',
-        handler:  (request, h) => {
+        handler:  async (request, h) => {
     
-            const payload = request.payload;
-            return `Welcome ${encodeURIComponent(payload.username)}!`;
+            // const payload = request.payload;
+            // return `Welcome ${encodeURIComponent(payload.username)}!`;
+            const results = await drivers.insert(request.payload)
+            return h.response('worked', results ).code(200);
         },
         options: {
             auth: false,
@@ -35,6 +47,14 @@ const init = async () => {
             }
         }
     });
+    server.route({
+        method: 'POST',
+        path: '/login',
+        handler:  async (request, h) => {
+    
+           
+        },
+    })
 
 
     await server.start();
@@ -46,5 +66,14 @@ process.on('unhandledRejection', (err) => {
     console.log(err);
     process.exit(1);
 });
+
+
+// const result = dotenv.config()
+ 
+// if (result.error) {
+//   throw result.error
+// }
+ 
+// console.log(result.parsed)
 
 init();
